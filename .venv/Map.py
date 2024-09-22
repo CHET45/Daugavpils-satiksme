@@ -1,6 +1,7 @@
 import folium
 import pandas as pd
 import urllib.request
+from branca.element import Template, MacroElement
 def exportStations(url):
     page = urllib.request.urlopen(url)
     text =  str(page.read().decode(page.headers.get_content_charset()))
@@ -76,69 +77,112 @@ def getLinkList():
             linkList.append("https://satiksme.daugavpils.lv" + tempUrl)
     return linkList
 
-def updateStations():
-    linkList=getLinkList()
+def upddateMap():
+    """ In last build uncomment this!!!
+    linkList = getLinkList()
     for link in linkList:
         exportStations(link)
-# Create a map centered at a specific location
-#def CreateMap(workdayTimetable,holydayTimetable):
-m = folium.Map(location=[55.872, 26.5356], zoom_start=15,zoom_control=False)  # Daugavpils coordinates
-updateStations()
-stations={}
-stationNames=[]
-stationCoords=[]
-with open('Stations.txt', 'r', encoding='utf-8') as file:
-    stations=eval(file.read())
-    stationNames=stations.keys()
-    stationCoords=stations.values()
-#data=pd.DataFrame(workdayTimetable.values(),workdayTimetable.keys())
-#table = data.to_html(
-#   classes="table table-striped table-hover table-condensed table-responsive"
-#)
-h="""
-<style>
-.button {
-  background-color: #04AA6D; /* Green */
-  border: 1px solid green;
-  color: white;
-  padding: 15px 32px;
-  text-align: center;
-  text-decoration: none;
-  font-size: 14px;
-  cursor: pointer;
-  width: 100px;
-  display: block;
-}
+    """
+    m = folium.Map(location=[55.872, 26.5356], zoom_start=15,zoom_control=False)  # Daugavpils coordinate
+    stations={}
+    stationNames=[]
+    stationCoords=[]
+    with open('Stations.txt', 'r', encoding='utf-8') as file:
+        stations=eval(file.read())
+        stationNames=stations.keys()
+        stationCoords=stations.values()
+    if len(stationNames)==len(stationCoords):
+        for cor,name in zip(stationCoords,stationNames):
+            htmlTooltip = f"""
+                <div style="font-family: 'Arial'; font-size: 14px; color: black;">
+                    <b>{name}</b>
+                </div>
+            """
+            htmlIcon="""
+                        <style>
+                         button {border: none;
+                            background-color: inherit;}
+                         img{position:absolute}
+                        </style>
+                        """+f"""
+                        <button onclick="openNav('{name}')">
+                         <img src="icons\marker-shadow.png">
+                         <img src="icons\marker-icon.png" >
+                        </button>
+                        """
+            tooltip=folium.Tooltip(htmlTooltip)
+            icon=folium.DivIcon(htmlIcon)
+            marker=folium.Marker(location=cor,
+                                 tooltip=tooltip,
+                                 icon=icon).add_to(m)
+    menu = """
+    {% macro html(this, kwargs) %}
+        <style>
+            /* Боковая панель */
+            .sidebar {
+                max-height: 30%;
+                width: 300px;
+                position: fixed;
+                z-index: 1000;
+                top: 10px;
+                left: 10px;
+                background-color: #f8f9fa;
+                transition: 0.5s;
+            }
 
-.button:not(:last-child) {
-  border-bottom: none; /* Prevent double borders */
-}
+            /* Стили элементов бокового меню */
+            #stationName{                
+                width: 260px;
+                padding: 8px 8px 8px 8px;
+                text-align: center;
+                left: 0px;
+                font-size: 16px;
+                color: #333;
+                display: inline;
+                border: none;
+            }            
+            #searchImg{
+                height: 90%;
+                top: 5%;
+                right: 5%;
+            }
+            #searchButton{
+                height: 100%;
+                width: 40px;
+                position: absolute;
+                right: 0px;
+                border: none;
+                background-color: #64c8fb;
+            }
 
-.button:hover {
-  background-color: #3e8e41;
-}
-</style>
-<body>
+            
+        </style>
 
-<div >
-  <button class="button">Button</button>
-  <button class="button">Button</button>
-</div>
+        <div id="sidebar" class="sidebar">
+            <form id="search">
+                <input type="text" id="stationName" name="stationName">
+                <button type="button" id="searchButton" onclick="searchStation()"><img id="searchImg" src="icons\search.png">
+                </form>
+        </div>
 
-</body>
-"""
-if len(stationNames)==len(stationCoords):
-    for cor,name in zip(stationCoords,stationNames):
-        html = f"""
-            <div style="font-family: 'Arial'; font-size: 14px; color: black;">
-                <b>{name}</b>
-            </div>
-        """
-        # Create a popup with the custom HTML
-        popup = folium.Popup(h)
-        tooltip=folium.Tooltip(html)
-        # Add marker with the custom popup
-        marker=folium.Marker(location=cor,tooltip=tooltip, popup=popup).add_to(m)
+        <script>
+            function searchStation(){
+            }
+            
+            function openNav(name) {
+                document.getElementById("sidebar").style.height = "auto";   
+                document.getElementById("stationName").value=name;
+            }
 
-# Save the map to an HTML file
-m.save('nyc_map.html')
+            /* Закрыть боковое меню */
+            function closeNav() {
+                document.getElementById("sidebar").style.height = "0";
+            }
+        </script>
+    {% endmacro %}
+    """
+    menu_element = MacroElement()
+    menu_element._template = Template(menu)
+    m.get_root().add_child(menu_element)
+    return m
+    # Save the map to an HTML file
