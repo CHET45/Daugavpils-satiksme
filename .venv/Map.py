@@ -1,7 +1,9 @@
 import folium
 import pandas as pd
 import urllib.request
-from branca.element import Template, MacroElement
+from branca.element import Template, MacroElement, JavascriptLink
+
+
 def exportStations(url):
     page = urllib.request.urlopen(url)
     text =  str(page.read().decode(page.headers.get_content_charset()))
@@ -98,23 +100,29 @@ def upddateMap():
                     <b>{name}</b>
                 </div>
             """
-            htmlIcon="""
-                        <style>
-                         button {border: none;
-                            background-color: inherit;}
-                         img{position:absolute}
+            htmlIcon="""<style>
+                         button {
+                         border:none;
+                         background-color:inherit;
+                         }
+                         .icon{
+                         position:absolute;
+                         top:-31px;
+                         left:-11px;
+                         }
                         </style>
                         """+f"""
                         <button onclick="openNav('{name}')">
-                         <img src="icons\marker-shadow.png">
-                         <img src="icons\marker-icon.png" >
+                         <img class="icon"  src="icons/marker-shadow.png">
+                         <img class="icon" id="{name}" src="icons/marker-icon.png" >
                         </button>
                         """
             tooltip=folium.Tooltip(htmlTooltip)
             icon=folium.DivIcon(htmlIcon)
             marker=folium.Marker(location=cor,
                                  tooltip=tooltip,
-                                 icon=icon).add_to(m)
+                                 icon=icon
+                                 ).add_to(m)
     menu = """
     {% macro html(this, kwargs) %}
         <style>
@@ -133,10 +141,10 @@ def upddateMap():
             /* Стили элементов бокового меню */
             #stationName{                
                 width: 260px;
-                padding: 8px 8px 8px 8px;
+                padding: 4px 4px 4px 4px;
                 text-align: center;
                 left: 0px;
-                font-size: 16px;
+                font-size: 20px;
                 color: #333;
                 display: inline;
                 border: none;
@@ -159,30 +167,54 @@ def upddateMap():
         </style>
 
         <div id="sidebar" class="sidebar">
-            <form id="search">
                 <input type="text" id="stationName" name="stationName">
-                <button type="button" id="searchButton" onclick="searchStation()"><img id="searchImg" src="icons\search.png">
-                </form>
+                <button type="button" id="searchButton" onclick="searchStation()"><img id="searchImg" src="icons/search.png">
         </div>
-
-        <script>
+        <script>            
+             document.addEventListener("DOMContentLoaded", function() {
+                new QWebChannel(qt.webChannelTransport, function(channel) {
+                    window.station_finder = channel.objects.station_finder;
+                });
+            });
             function searchStation(){
+            """+f"""      
+                var map = window.{m.get_name()};"""+"""
+                let name=document.getElementById("stationName").value
+                station_finder.findStation(name,
+                    function(coords){     
+                        if (coords.length==2){             
+                            map.setView(coords,16);
+                            if(document.getElementsByClassName("current").length>0){             
+                                document.getElementsByClassName("current")[0].src="icons/marker-icon.png";                    
+                                document.getElementsByClassName("current")[0].classList.remove("current");
+                            }      
+                            document.getElementById(name).classList.add("current");  
+                            document.getElementById(name).src="icons/current-marker-icon.png";
+                        }
+                    }
+                ); 
             }
             
             function openNav(name) {
-                document.getElementById("sidebar").style.height = "auto";   
-                document.getElementById("stationName").value=name;
+                document.getElementById("stationName").value=name;  
+                searchStation();
+                
+                
             }
-
+    
             /* Закрыть боковое меню */
             function closeNav() {
                 document.getElementById("sidebar").style.height = "0";
             }
-        </script>
+    </script>
     {% endmacro %}
     """
     menu_element = MacroElement()
     menu_element._template = Template(menu)
+    m.get_root().header.add_child(JavascriptLink('qrc:///qtwebchannel/qwebchannel.js'))
     m.get_root().add_child(menu_element)
     return m
     # Save the map to an HTML file
+if __name__ == "__main__":
+    m=upddateMap()
+    m.save('nyc_map.html')
