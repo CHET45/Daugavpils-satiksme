@@ -21,6 +21,8 @@ class StationFinder(QObject):
 
     @pyqtSlot(str,result=list)
     def findStation(self,station=None):
+        if "\""in station:
+            station=station.replace("\"","*")
         try:
             stations=eval(self.readFile())
             if station in stations.keys():
