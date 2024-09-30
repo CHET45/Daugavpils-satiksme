@@ -23,7 +23,12 @@ def exportStations(url):
             lng=float(st[lngPos:st.find("\"",lngPos)])
 
             namePos=st.rfind("name")+len("name\": \"")
-            name=st[namePos:st.find("\"",namePos)]
+            nameEndPos = st.find("\"",namePos)
+            if st[nameEndPos-1] == '\\':
+                nameEndPos = st.find("\"",nameEndPos+1)+1
+            name=st[namePos:nameEndPos]
+            if "\\\"" in name:
+                name = name.replace("\\\"","*")
             pos=[lat,lng]
             stationLocations[name]=pos
 
@@ -90,38 +95,46 @@ def upddateMap():
     stationNames=[]
     stationCoords=[]
     with open('Stations.txt', 'r', encoding='utf-8') as file:
-        stations=eval(file.read())
-        stationNames=stations.keys()
-        stationCoords=stations.values()
-    if len(stationNames)==len(stationCoords):
-        for cor,name in zip(stationCoords,stationNames):
+        stations = eval(file.read())
+        stationNames = stations.keys()
+        stationCoords = stations.values()
+    if len(stationNames) == len(stationCoords):
+        for cor, name in zip(stationCoords, stationNames):
+            if "*" in name:
+                name = name.replace("*","\\\"")
             htmlTooltip = f"""
-                <div style="font-family: 'Arial'; font-size: 14px; color: black;">
+                <div style = "font-family: 'Arial'; font-size: 14px; color: black;">
                     <b>{name}</b>
                 </div>
             """
-            htmlIcon="""<style>
+            if "\\\"" in name:
+                name=name.replace("\\\"","*")
+            htmlIcon = """<style>
                          button {
-                         border:none;
-                         background-color:inherit;
+                         border: none;
+                         background-color: inherit;
                          }
                          .icon{
-                         position:absolute;
-                         top:-31px;
-                         left:-11px;
+                         position: absolute;
+                         top: -31px;
+                         left: -11px;
                          }
                         </style>
                         """+f"""
-                        <button onclick="openNav('{name}')">
-                         <img class="icon"  src="icons/marker-shadow.png">
-                         <img class="icon" id="{name}" src="icons/marker-icon.png" >
+                        <button onmouseup = "openNav('{name}')">"""
+
+            if "*" in name:
+                name = name.replace("*","\"")
+            htmlIcon+=f"""
+                         <img class = "icon"  src = "icons/marker-shadow.png">
+                         <img class = "icon" id = '{name}' src = "icons/marker-icon.png" >
                         </button>
                         """
-            tooltip=folium.Tooltip(htmlTooltip)
-            icon=folium.DivIcon(htmlIcon)
-            marker=folium.Marker(location=cor,
-                                 tooltip=tooltip,
-                                 icon=icon
+            tooltip = folium.Tooltip(htmlTooltip)
+            icon = folium.DivIcon(htmlIcon)
+            marker = folium.Marker(location = cor,
+                                 tooltip = tooltip,
+                                 icon = icon
                                  ).add_to(m)
     menu = """
     {% macro html(this, kwargs) %}
@@ -166,9 +179,9 @@ def upddateMap():
             
         </style>
 
-        <div id="sidebar" class="sidebar">
-                <input type="text" id="stationName" name="stationName">
-                <button type="button" id="searchButton" onclick="searchStation()"><img id="searchImg" src="icons/search.png">
+        <div id = "sidebar" class = "sidebar">
+                <input type = "text" id = "stationName" name = "stationName">
+                <button type = "button" id = "searchButton" onclick = "searchStation()"><img id = "searchImg" src = "icons/search.png">
         </div>
         <script>            
              document.addEventListener("DOMContentLoaded", function() {
@@ -179,23 +192,36 @@ def upddateMap():
             function searchStation(){
             """+f"""      
                 var map = window.{m.get_name()};"""+"""
-                let name=document.getElementById("stationName").value
+                let name = document.getElementById("stationName").value
                 station_finder.findStation(name,
                     function(coords){     
-                        if (coords.length==2){             
-                            map.setView(coords,16);
-                            if(document.getElementsByClassName("current").length>0){             
-                                document.getElementsByClassName("current")[0].src="icons/marker-icon.png";                    
+                        if (coords.length == 2){
+                            var center = map.getCenter();
+                            let xDif = center.lat - coords[0];
+                            let yDif = center.lng - coords[1];
+                            let distance = Math.sqrt(xDif*xDif+yDif*yDif);
+                            if (distance>0.012){
+                            
+                                let zoom;
+                                if (map.getZoom() < 16) zoom = 16;
+                                else zoom = map.getZoom();    
+                                map.setView(coords, zoom);
+                            }
+                            if(document.getElementsByClassName("current").length > 0){             
+                                document.getElementsByClassName("current")[0].src = "icons/marker-icon.png";                    
                                 document.getElementsByClassName("current")[0].classList.remove("current");
                             }      
                             document.getElementById(name).classList.add("current");  
-                            document.getElementById(name).src="icons/current-marker-icon.png";
+                            document.getElementById(name).src = "icons/current-marker-icon.png";
                         }
                     }
                 ); 
             }
             
             function openNav(name) {
+                while(name.includes("*") == true){
+                    name = name.replace("*","\\\"");          
+                }
                 document.getElementById("stationName").value=name;  
                 searchStation();
                 
