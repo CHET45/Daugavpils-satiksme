@@ -64,27 +64,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ASKED_SHARE_PROJECT_CONFIGURATION_FILES": "true",
-    "Python.Experiment.executor": "Run",
-    "Python.Map.executor": "Run",
-    "Python.Menu.executor": "Run",
-    "Python.PyQtApp.executor": "Run",
-    "Python.ReadPDF.executor": "Run",
-    "Python.Run Application.executor": "Run",
-    "Python.SiteToPDF.executor": "Run",
-    "Python.Timetables.executor": "Run",
-    "Python.Unnamed.executor": "Run",
-    "Python.Update Map.executor": "Run",
-    "Python.main.executor": "Run",
-    "Python.request.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "SearchStationByName",
-    "last_opened_file_path": "D:/Документы/GitHub/Daugavpils-satiksme/Daugavpils-satiksme/.venv/icons",
-    "settings.editor.selected.configurable": "ml.llm.LLMConfigurable"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ASKED_SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
+    &quot;Python.Experiment.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Map.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Menu.executor&quot;: &quot;Run&quot;,
+    &quot;Python.PyQtApp.executor&quot;: &quot;Run&quot;,
+    &quot;Python.ReadPDF.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Run Application.executor&quot;: &quot;Run&quot;,
+    &quot;Python.SiteToPDF.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Timetables.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Unnamed.executor&quot;: &quot;Run&quot;,
+    &quot;Python.Update Map.executor&quot;: &quot;Run&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;Python.request.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;SearchStationByName&quot;,
+    &quot;last_opened_file_path&quot;: &quot;D:/Документы/GitHub/Daugavpils-satiksme/Daugavpils-satiksme/.venv/icons&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;ml.llm.LLMConfigurable&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\Документы\GitHub\Daugavpils-satiksme\Daugavpils-satiksme\.venv\icons" />
@@ -138,8 +138,8 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.Update Map" />
       <item itemvalue="Python.Run Application" />
+      <item itemvalue="Python.Update Map" />
     </list>
   </component>
   <component name="SharedIndexes">
