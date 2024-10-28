@@ -5,7 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="6cb7d725-b4fb-4aa5-b4af-01b46bd68428" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Daugavpils-satiksme.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/Daugavpils-satiksme.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -40,18 +42,18 @@
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "CHET45"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;CHET45&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/CHET45/Daugavpils-satiksme.git",
-    "accountId": "6b2231ab-72b0-4ca1-9653-313d6ec077bc"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/CHET45/Daugavpils-satiksme.git&quot;,
+    &quot;accountId&quot;: &quot;6b2231ab-72b0-4ca1-9653-313d6ec077bc&quot;
   }
-}]]></component>
+}</component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/.venv/Lib/site-packages/branca/element.py" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/.venv/Lib/site-packages/folium/map.py" root0="FORCE_HIGHLIGHTING" />
@@ -87,7 +89,7 @@
     "Python.request.executor": "Run",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "git-widget-placeholder": "main",
-    "last_opened_file_path": "C:/Program Files/JetBrains/PyCharm Community Edition 2024.2.3",
+    "last_opened_file_path": "D:/Документы/GitHub/Daugavpils-satiksme/Daugavpils-satiksme/code",
     "settings.editor.selected.configurable": "com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable"
   }
 }]]></component>
@@ -96,7 +98,7 @@
       <recent name="D:\Документы\GitHub\Daugavpils-satiksme\Daugavpils-satiksme\.venv\icons" />
     </key>
   </component>
-  <component name="RunManager" selected="Python.Run Application">
+  <component name="RunManager" selected="Python.Update Map">
     <configuration name="Run Application" type="PythonConfigurationType" factoryName="Python">
       <module name="Daugavpils-satiksme" />
       <option name="ENV_FILES" value="" />
@@ -106,11 +108,11 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="D:\Документы\GitHub\Daugavpils-satiksme\Daugavpils-satiksme\.venv" />
+      <option name="WORKING_DIRECTORY" value="D:\Документы\GitHub\Daugavpils-satiksme\Daugavpils-satiksme\code" />
       <option name="IS_MODULE_SDK" value="true" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/.venv/PyQtApp.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/code/PyQtApp.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
@@ -128,11 +130,12 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
-      <option name="WORKING_DIRECTORY" value="D:\Документы\GitHub\Daugavpils-satiksme\Daugavpils-satiksme\.venv" />
+      <option name="SDK_NAME" value="Python 3.13 (venv)" />
+      <option name="WORKING_DIRECTORY" value="D:\Документы\GitHub\Daugavpils-satiksme\Daugavpils-satiksme\code" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
-      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/.venv/Menu.py" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/code/Map.py" />
       <option name="PARAMETERS" value="" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
