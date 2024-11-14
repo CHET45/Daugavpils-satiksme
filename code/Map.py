@@ -1,41 +1,35 @@
+from os import remove
+from offline_folium import offline
 import folium
 import pandas as pd
 import urllib.request
 from branca.element import Template, MacroElement, JavascriptLink
 
 
+def averageCoords(coords):  # [[lat1,lng1],[lat2,lng2]]
+    avlat = (coords[0][0] + coords[1][0]) / 2
+    avlng = (coords[0][1] + coords[1][1]) / 2
+    return [avlat, avlng]
 def exportStations(url):
     page = urllib.request.urlopen(url)
-    text =  str(page.read().decode(page.headers.get_content_charset()))
-    text=text[text.index("stations"):text.index("    $(document)")]
-    #print(text[text.index("stations"):text.index("    $(document)")])
-    with open("Stations.txt","r",encoding="utf-8") as file:
-        stationLocations=eval(file.read())
-    temp=text.split(",\"other\":")
-
-
-    for st in temp:
-        if st.find("lat")!=-1:
-            latPos = st.find("lat") + len("lat\":\"")
-            lat = float(st[latPos:st.find("\"", latPos)])
-
-            lngPos=st.find("lng")+len("lng\":\"")
-            lng=float(st[lngPos:st.find("\"",lngPos)])
-
-            namePos=st.rfind("name")+len("name\": \"")
-            nameEndPos = st.find("\"",namePos)
-            if st[nameEndPos-1] == '\\':
-                nameEndPos = st.find("\"",nameEndPos+1)+1
-            name=st[namePos:nameEndPos]
-            if "\\\"" in name:
-                name = name.replace("\\\"","*")
-            pos=[lat,lng]
-            stationLocations[name]=pos
-
-
+    text = str(page.read().decode(page.headers.get_content_charset()))
+    text = text[text.index("{\"routes"):text.index("    $(document)")]
+    data = eval(text)
+    with open("Stations.txt", "r", encoding="utf-8") as file:
+        stationLocations = eval(file.read())
+    for station in data["stations"]:
+        name = station["name"]
+        if "\\\"" in name:
+            name = name.replace("\\\"", "*")
+        pos = [float(station["geo"]['lat']), float(station["geo"]['lng'])]
+        if name in stationLocations.keys():
+            pos = averageCoords([pos, stationLocations[name]])
+        stationLocations[name] = pos
+    remove('Stations.txt')
     with open('Stations.txt', 'w', encoding='utf-8') as file:
         file.write(str(stationLocations))
     file.close()
+
 def encodeUrl(str):
     lib = {"ē": "%c4%93",
            "ŗ": "%c5%97",
@@ -49,7 +43,7 @@ def encodeUrl(str):
            "ā": "%c4%81",
            "ņ": "%c5%86",
            "č": "%c4%8d",
-           "ž": "%c5%be ",
+           "ž": "%c5%be",
            "Ō": "%c5%8c",
            "Ī": "%c4%aa",
            "Ū": "%c5%aa",
@@ -66,22 +60,32 @@ def encodeUrl(str):
     for let in str:
         if let in lib.keys():
             str = str.replace(let, lib[let])
-
     return str
+def checkForExtraLink(url):
+    extraLink="None"
+    page = urllib.request.urlopen(url)
+    text = str(page.read().decode(page.headers.get_content_charset()))
+    text= text[text.index("<span class=\"change-derection\"></span>"):text.index("<div class=\"streets\">")-5]
+    if len(text)>40:
+        extraLink=text[text.index("<a href=\'")+len("<a href=\'"):text.index("\' class=\'back-link\'>")]
+    return extraLink
 def getLinkList():
-    sites=["/autobusu-kustibu-saraksts","/tramvaju-kustibu-saraksts"]
+    saite="/daugavpils-kustibu-saraksts"
     linkList = []
-    for site in sites:
-        page = urllib.request.urlopen('https://satiksme.daugavpils.lv' + site)
-        text = str(page.read().decode(page.headers.get_content_charset()))
-        timetableURLs = text[text.find("class=\"odd\""):text.find("</table>", text.find("class=\"odd\""))]
-        timetableURLs = timetableURLs.split("href=\"")
-        timetableURLs.pop(0)
+    page = urllib.request.urlopen('https://satiksme.daugavpils.lv' + saite)
+    text = str(page.read().decode(page.headers.get_content_charset()))
+    timetableURLs = text[text.find("class=\"odd\""):text.find("</table>", text.find("class=\"odd\""))]
+    timetableURLs = timetableURLs.split("href=\"")
+    timetableURLs.pop(0)
 
-        for st in timetableURLs:
-            tempUrl = st[0:st.find("\"")]
-            tempUrl = encodeUrl(tempUrl)
-            linkList.append("https://satiksme.daugavpils.lv" + tempUrl)
+    for st in timetableURLs:
+        tempUrl = st[0:st.find("\"")]
+        tempUrl = encodeUrl(tempUrl)
+        linkList.append("https://satiksme.daugavpils.lv" + tempUrl)
+        extraLink=checkForExtraLink(linkList[-1])
+        if extraLink != "None":
+            extraLink = encodeUrl(extraLink)
+            linkList.append("https://satiksme.daugavpils.lv" + extraLink)
     return linkList
 
 def upddateMap():
@@ -91,9 +95,6 @@ def upddateMap():
         exportStations(link)
     """
     m = folium.Map(location=[55.872, 26.5356], zoom_start=15,zoom_control=False)  # Daugavpils coordinate
-    stations={}
-    stationNames=[]
-    stationCoords=[]
     with open('Stations.txt', 'r', encoding='utf-8') as file:
         stations = eval(file.read())
         stationNames = stations.keys()
