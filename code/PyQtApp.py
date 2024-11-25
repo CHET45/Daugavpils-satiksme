@@ -1,4 +1,5 @@
 import sys
+
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QUrl, QObject, pyqtSlot
@@ -18,21 +19,49 @@ class StationFinder(QObject):
             return data
         except Exception as e:
             return str(e)
-
+    def searchStationPosAndSid(self, name, stations):
+        posList = []
+        sidList = []
+        for sid in stations:
+            if stations[sid]['name'] == name:
+                posList.append(stations[sid]['pos'])
+                sidList.append(sid)
+        return [posList,sidList]
+    def averagePosition(self, posList):
+        avgX = posList[0][0]
+        avgY = posList[0][1]
+        for pos in posList:
+            avgX += pos[0]
+            avgY += pos[1]
+            avgX /= 2
+            avgY /= 2
+        return [avgX,avgY]
     @pyqtSlot(str,result=list)
-    def findStation(self,station=None):
-        if "\""in station:
-            station=station.replace("\"","*")
-        try:
-            stations=eval(self.readFile())
-            if station in stations.keys():
-                return stations[station]
-            else:
-                print("No station")
+    def findStation(self,nameOrID=None):
+        if not nameOrID.isnumeric():
+            nameOrID=nameOrID.replace("\"","*")
+            try:
+                stations = eval(self.readFile())
+                posSidList = self.searchStationPosAndSid(nameOrID, stations)
+                positionList = posSidList[0]
+                sidList = posSidList[1]
+                print(positionList)
+                print(sidList)
+                if len(positionList) >= 1:
+                    return [self.averagePosition(positionList),sidList]
+                else:
+                    print("No station")
+                    return []
+            except Exception as e:
+                print(f"Error occurred: {e}")
                 return []
-        except Exception as e:
-            print(f"Error occurred: {e}")
-            return []
+        else:
+            try:
+                stations=eval(self.readFile())
+                return stations[nameOrID]['pos']
+            except Exception as e:
+                print(f"Error occurred: {e}")
+                return []
 
 class MapWindow(QMainWindow):
     def __init__(self):
