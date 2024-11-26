@@ -7,15 +7,14 @@ import urllib.request
 from branca.element import Template, MacroElement, JavascriptLink
 
 
-def averageCoords(coords):  # [[lat1,lng1],[lat2,lng2]]
-    avlat = (coords[0][0] + coords[1][0]) / 2
-    avlng = (coords[0][1] + coords[1][1]) / 2
-    return [avlat, avlng]
+
 def checkForSimilarCords(cords,currentsid, stations):
     for sid in stations:
         if stations[sid]['pos'] == cords and sid != currentsid:
             return False
     return True
+
+
 def exportStations(url):
     page = urllib.request.urlopen(url)
     text = str(page.read().decode(page.headers.get_content_charset()))
@@ -25,22 +24,29 @@ def exportStations(url):
         stationLocations = eval(file.read())
     for station in data["stations"]:
         sid = station["sid"]
-        name = station["name"]
+        name = station["name"].strip()
+        transportName = busORtrain(url) + " " + station["number"]
         pos = [float(station["geo"]['lat']), float(station["geo"]['lng'])]
-        if "\\\"" in name:
-            name = name.replace("\\\"", "*")
+        if "\"" in name:
+            name = name.replace("\"", "*")
         """
-        {sid:{'name':name, 'pos':pos},sid:{'name':name, 'pos':pos}}
+        {sid:{'name':name, 'pos':pos},sid:{'name':name, 'pos':pos}} 
+        {sid:{'name':name, 'pos':pos, 'transport':transport},sid:{'name':name, 'pos':pos, 'transport':transport}}
+        transport = {transportName:[wtime,htime],transportName:[wtime,htime]}
+        wtime,htime = ["time","time"]
         """
+        if sid in stationLocations.keys():
+            if transportName not in stationLocations[sid]['transport'].keys():
+                stationLocations[sid]['transport'][transportName] = [station["wtlist"],station["htlist"]]
         if sid not in stationLocations.keys() and checkForSimilarCords(pos,sid,stationLocations):
-            stationLocations[sid]={'name':name,'pos':pos}
+            stationLocations[sid]={'name':name,'pos':pos,'transport':{transportName:[station["wtlist"],station["htlist"]]}}
 
     remove('Stations.txt')
     with open('Stations.txt', 'w', encoding='utf-8') as file:
         file.write(str(stationLocations))
     file.close()
 
-def encodeUrl(str):
+def encodeUrl(url):
     lib = {"ē": "%c4%93",
            "ŗ": "%c5%97",
            "ū": "%c5%ab",
@@ -67,10 +73,10 @@ def encodeUrl(str):
            "Ņ": "%c5%85",
            "Č": "%c4%8c",
            "Ž": "%c5%bd"}
-    for let in str:
+    for let in url:
         if let in lib.keys():
-            str = str.replace(let, lib[let])
-    return str
+            url = url.replace(let, lib[let])
+    return url
 def checkForExtraLink(url):
     extraLink="None"
     page = urllib.request.urlopen(url)
@@ -84,6 +90,8 @@ def busORtrain(url):
         return "Tramvajs"
     elif url.find("autobus") != -1:
         return "Autobuss"
+    return "Transports"
+
 def getLinkList():
     saite="/daugavpils-kustibu-saraksts"
     linkList = []
@@ -103,12 +111,13 @@ def getLinkList():
             linkList.append("https://satiksme.daugavpils.lv" + extraLink)
     return linkList
 
-def upddateMap():
+def updateMap():
     """ In last build uncomment this!!!
     linkList = getLinkList()
     for link in linkList:
         exportStations(link)
     """
+
     m = folium.Map(location=[55.872, 26.5356], zoom_start=15,zoom_control=False)  # Daugavpils coordinate
     with open('Stations.txt', 'r', encoding='utf-8') as file:
         stations = eval(file.read())
@@ -136,11 +145,7 @@ def upddateMap():
                      }
                     </style>
                     """+f"""
-                    <button onmouseup = "openNav('{name}','{sid}')">"""
-
-        if "*" in name:
-            name = name.replace("*","\"")
-        htmlIcon+=f"""
+                    <button onmouseup = "openNav('{name}','{sid}')">
                      <img class = "icon"  src = "icons/marker-shadow.png">
                      <img class = "icon" id = '{sid}' src = "icons/marker-icon.png" >
                     </button>
@@ -154,25 +159,26 @@ def upddateMap():
     menu = """
     {% macro html(this, kwargs) %}
         <style>
-            /* Боковая панель */
-            .sidebar {
-                max-height: 30%;
-                width: 300px;
+            #sidebar {
                 position: fixed;
                 z-index: 1000;
                 top: 10px;
                 left: 10px;
-                background-color: #f8f9fa;
-                transition: 0.5s;
+                transition: 0.5s;        
             }
-
-            /* Стили элементов бокового меню */
+            #transports {     
+                width: 260px;
+                position: fixed;           
+                max-height: 40%;
+                overflow: auto;
+                background-color: #f8f9fa;
+            }
             #stationName{                
                 width: 260px;
                 padding: 4px 4px 4px 4px;
-                text-align: center;
+                text-align: left;
                 left: 0px;
-                font-size: 20px;
+                font-size: 18px;
                 color: #333;
                 display: inline;
                 border: none;
@@ -190,13 +196,55 @@ def upddateMap():
                 border: none;
                 background-color: #64c8fb;
             }
+            
+            .collapsible {
+              background-color: #777;
+              color: white;
+              cursor: pointer;
+              padding: 8px;
+              width: 100%;
+              border: none;
+              text-align: left;
+              outline: none;
+              font-size: 15px;
+            }
+            .active, .collapsible:hover {
+              background-color: #555;
+            }
+            .column {
+              box-sizing: border-box;
+              float: left;
+              width: 50%;
+              padding: 5px;
+            }
+            
+            .content {
+              padding: 0 18px;
+              max-height: 0;
+              overflow: hidden;
+              transition: max-height 0.2s ease-out;
+              background-color: #f1f1f1;
+            }
+            .timetable{
+                border-collapse: collapse;
+                width: 100%;
+            }
+            .timetable td, .timetable th{
+            border: 1px solid #ddd;
+            padding: 8px;
+            }
+            .timetable tr:hover {background-color: #ddd;}
+            
+            
 
             
         </style>
 
-        <div id = "sidebar" class = "sidebar">
+        <div id = "sidebar">
                 <input type = "text" id = "stationName" name = "stationName">
-                <button type = "button" id = "searchButton" onclick = "searchStationByName()"><img id = "searchImg" src = "icons/search.png">
+                <button type = "button" id = "searchButton" onclick = "searchStationByName()"><img id = "searchImg" src = "icons/search.png"></button>
+                <div id = "transports">
+                </div>
         </div>
         <script>            
              document.addEventListener("DOMContentLoaded", function() {
@@ -204,10 +252,13 @@ def upddateMap():
                     window.station_finder = channel.objects.station_finder;
                 });
             });
+            
             function searchStationByName(){
             """+f"""      
                 var map = window.{m.get_name()};"""+"""
                 let name = document.getElementById("stationName").value
+                document.getElementById("transports").innerHTML = "";                
+                document.getElementById("transports").style.border = "";
                 station_finder.findStation(name,
                     function(cordsAndID){
                         let cords = cordsAndID[0]; 
@@ -215,13 +266,11 @@ def upddateMap():
                             var center = map.getCenter();
                             let xDif = center.lat - cords[0];
                             let yDif = center.lng - cords[1];
-                            let distance = Math.sqrt(xDif*xDif+yDif*yDif);
-                            if (distance>0.0114 || map.getZoom() < 17){                            
-                                let zoom;
-                                if (map.getZoom() < 17) zoom = 17;
-                                else zoom = map.getZoom();    
-                                map.setView(cords, zoom);
-                            }
+                            let distance = Math.sqrt(xDif*xDif+yDif*yDif);                          
+                            let zoom;
+                            if (map.getZoom() < 17) zoom = 17;
+                            else zoom = map.getZoom();    
+                            map.setView(cords, zoom);
                             
                         }      
                         const len = document.getElementsByClassName("current").length;
@@ -270,21 +319,67 @@ def upddateMap():
                     }
                 ); 
             }
-            
+            function searchTransport(ID){
+                station_finder.findTransport(ID,
+                    function(transport){
+                        document.getElementById("transports").style.border = "2px solid #ddd";
+                        document.getElementById("transports").innerHTML = "";
+                        for(let i = 0; i < transport.length; i++){
+                            html = `<button class="collapsible">${transport[i][0]}</button>
+                            <div class="content">
+                                `;   
+                                                          
+                                for(let d = 0; d<transport[i][1].length;d++){
+                                
+                                    html+='<div class="column"><table class="timetable">';
+                                    if(d==0){
+                                    html += "<tr><th>Darba dienas</th><tr>";
+                                    }
+                                    else{
+                                    html += "<tr><th>Brīvdienas</th><tr>";
+                                    }
+                                    
+                                    for(let t = 0; t<transport[i][1][d].length; t++){
+                                        html+=`
+                                            <tr>
+                                                <td>${transport[i][1][d][t]}</td>
+                                            </tr>`;
+                                    }
+                                    html+="</table></div>";
+                                }                            
+                            html+="</div>";
+                            document.getElementById("transports").innerHTML +=html ;
+                        }
+                        var coll = document.getElementsByClassName("collapsible");
+                        var i;
+                        
+                        for (i = 0; i < coll.length; i++) {
+                          coll[i].addEventListener("click", function() {
+                            this.classList.toggle("active");
+                            var content = this.nextElementSibling;
+                            if (content.style.maxHeight){
+                              content.style.maxHeight = null;
+                            } else {
+                              content.style.maxHeight = content.scrollHeight + "px";
+                            } 
+                          });
+                        }
+                    }
+                );
+                
+            }
             function openNav(name, ID) {
                 while(name.includes("*") == true){
                     name = name.replace("*","\\\"");          
                 }
+                searchTransport(ID);
                 document.getElementById("stationName").value=name;  
                 searchStationByID(ID);
                 
                 
             }
+            
     
-            /* Закрыть боковое меню */
-            function closeNav() {
-                document.getElementById("sidebar").style.height = "0";
-            }
     </script>
     {% endmacro %}
     """
@@ -295,5 +390,5 @@ def upddateMap():
     return m
     # Save the map to an HTML file
 if __name__ == "__main__":
-    m=upddateMap()
+    m=updateMap()
     m.save('nyc_map.html')

@@ -63,6 +63,18 @@ class StationFinder(QObject):
                 print(f"Error occurred: {e}")
                 return []
 
+    @pyqtSlot(str,result=list)
+    def findTransport(self, Id):
+        stations = eval(self.readFile())
+        if Id in stations.keys():
+            transport=[]
+            for tr in stations[Id]['transport'].keys():
+                transport.append([tr,stations[Id]['transport'][tr]])
+            print(transport)
+            return transport
+        return {}
+
+
 class MapWindow(QMainWindow):
     def __init__(self):
         super().__init__()
