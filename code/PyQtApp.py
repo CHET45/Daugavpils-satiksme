@@ -1,12 +1,9 @@
 import sys
-
 from PyQt5.QtWidgets import QApplication, QMainWindow, QVBoxLayout, QWidget
 from PyQt5.QtWebEngineWidgets import QWebEngineView
 from PyQt5.QtCore import QUrl, QObject, pyqtSlot
 from PyQt5.QtWebChannel import QWebChannel
 import os
-
-from pandas.io.json import to_json
 
 
 class StationFinder(QObject):
