@@ -1,10 +1,9 @@
-Перед запуском необходимо устоновить PyQt5, pandas и PyQtWebEngine
+Перед запуском необходимо устоновить folium, branca, PyQt5 и PyQtWebEngine
 
+pip install folium
+pip install branca
 pip install PyQt5
-
 pip install PyQtWebEngine
-
-pip install pandas
 
 Главный файл пока что PyQtApp.py. При его запуске откроется окно приложения.
 
@@ -12,13 +11,21 @@ pip install pandas
 
 Класс StationFinder в PyQtApp.py выполняет функцию связи HTML карты (а точнее JavaScript части) с файлом Stations.txt.
 
-В Stations.txt хранятся все названия станций и их координаты. В будующем там же будет храниться список транспорта и расписание для каждого транспорта для обоих направлений.
+В Stations.txt хранятся сид(id) станций их названия, их координаты, какой транспорт ходит через эту станцию и рассписание.
+Структура файла:
+{sid:{'name':name, 'pos':pos, 'transport':transport}}
+transport = {transportName:[wtime,htime]}
+wtime,htime = ["time","time"]
+{sid:{'name':name, 'pos':pos, 'transport':{transportName:[["time","time",...],["time","time",...]],...},...},...}
+
 
 Класс MapWindow в PyQtApp.py создаёт окно приложения с HTML картой (nyc_map.html).
 
 Карта (файл nyc_map.html) создаётся в Map.py.
 
-В Map.py методы exportStations, encodeUrl и getLinkList находят и экспортируют все данные станций с сайта https://satiksme.daugavpils.lv.
+В Map.py методы checkForSimilarCords, exportStations, encodeUrl, checkForExtraLink, busOrTrain и getLinkList (8 - 109 строки) находят и экспортируют все данные станций с сайта https://satiksme.daugavpils.lv.
 
   Метод upddateMap создаёт новую карту или перезаписывает файл nyc_map.html.
+  Первая часть метода(до переменной menu) создаёт маркеры и всплывающие названия станций.
+  Большую часть занимает переменна я menu(156 - 385 строки). В menu создаётся боковое меню и описывается основная логика программы, в том числе и связь с .py файлом.
 
